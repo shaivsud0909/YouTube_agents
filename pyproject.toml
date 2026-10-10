@@ -1,0 +1,15 @@
+[project]
+name = "boiler"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ddgs>=9.16.0",
+    "dotenv>=0.9.9",
+    "fastapi>=0.143.0",
+    "google-api-python-client>=2.201.0",
+    "pydantic-settings>=2.15.0",
+    "uvicorn>=0.54.0",
+    "youtube-transcript-api>=1.2.4",
+]
