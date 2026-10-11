@@ -92,5 +92,5 @@ class TranscriptResearch(BaseResearch):
                 errors=[f"Unexpected error: {exc}"],
             )
 
-transcript_research_service = TranscriptResearch()
-print(transcript_research_service.research(ResearchRequest(topic="claude", max_results=5, date=datetime.now(timezone.utc), language="en")))
+# transcript_research_service = TranscriptResearch()
+# print(transcript_research_service.research(ResearchRequest(topic="claude", max_results=5, date=datetime.now(timezone.utc), language="en")))

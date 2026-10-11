@@ -13,3 +13,4 @@ wheels/
 hash_files/
 logs/
 .env
+data/

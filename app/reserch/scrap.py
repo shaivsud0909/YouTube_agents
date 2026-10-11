@@ -1,6 +1,7 @@
 from app.reserch.base_reserch import BaseResearch
 from app.reserch.schema import ResearchRequest, ResearchResult
 from ddgs import DDGS
+from app.reserch.utils import extract_content
 from core.logs import logger
 
 class ScrapingResearch(BaseResearch):
@@ -29,7 +30,7 @@ class ScrapingResearch(BaseResearch):
                         "source_type": "web",
                         "title": result.get("title", ""),
                         "url": result.get("href", ""),
-                        "content": result.get("body", ""),
+                        "content": extract_content(result),
                         "published_at": published_at if (published_at := result.get("date")) else None,
                         "metadata": {
                             "rank": rank,
@@ -52,7 +53,7 @@ class ScrapingResearch(BaseResearch):
                 errors=[str(e)],
             )
 
-research_service = ScrapingResearch()
+# research_service = ScrapingResearch()
 
-request = ResearchRequest(topic="indian stock market", max_results=5, region="IN", language="en")
-print(research_service.research(request))
+# request = ResearchRequest(topic="arthur shelby", max_results=5, region="UK", language="en")
+# print(research_service.research(request))
