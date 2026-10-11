@@ -72,10 +72,7 @@ class ResearchIngestion:
             # 3. Generate embeddings and store in ChromaDB
             stored_count = self.vector_db.store_chunks(chunks)
 
-            logger.info(
-                "Research ingestion completed. Chunks stored: %d",
-                stored_count,
-            )
+            logger.info("Research ingestion completed. Chunks stored: %d",stored_count)
 
             return stored_count
 
