@@ -22,8 +22,13 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    youtube_api_key: str 
-    
+    youtube_api_key: str
+
+    # Vertex AI / Gemini
+    model_name: str = "gemini-2.0-flash"
+    google_project: str = ""
+    google_location: str = "us-central1"
+    google_credentials_path: str = ""
 
 
 settings = Settings()
