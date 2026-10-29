@@ -24,11 +24,9 @@ class Settings(BaseSettings):
 
     youtube_api_key: str
 
-    # Vertex AI / Gemini
-    model_name: str = "gemini-2.0-flash"
-    google_project: str = ""
-    google_location: str = "us-central1"
-    google_credentials_path: str = ""
+    # NVIDIA
+    model_name: str = "nvidia/nemotron-3.5-lightning-30b-a3b"
+    nvidia_api_key: str
 
 
 settings = Settings()

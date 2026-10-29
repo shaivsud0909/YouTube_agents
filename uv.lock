@@ -292,7 +292,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "google-api-python-client" },
     { name = "httpx" },
-    { name = "langchain-google-genai" },
+    { name = "langchain-nvidia-ai-endpoints" },
     { name = "langchain-text-splitters" },
     { name = "langgraph" },
     { name = "ollama" },
@@ -310,7 +310,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.143.0" },
     { name = "google-api-python-client", specifier = ">=2.201.0" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "langchain-google-genai", specifier = ">=4.4.2" },
+    { name = "langchain-nvidia-ai-endpoints" },
     { name = "langchain-text-splitters", specifier = ">=1.1.3" },
     { name = "langgraph", specifier = ">=0.3" },
     { name = "ollama", specifier = ">=0.6.3" },
@@ -762,15 +762,6 @@ wheels = [
 ]
 
 [[package]]
-name = "filetype"
-version = "1.2.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/bb/29/745f7d30d47fe0f251d3ad3dc2978a23141917661998763bebb6da007eb1/filetype-1.2.0.tar.gz", hash = "sha256:66b56cd6474bf41d8c54660347d37afcc3f7d1970648de365c102ef77548aadb", size = 998020, upload-time = "2022-11-02T17:34:04.141Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/18/79/1b8fa1bb3568781e84c9200f951c735f3f157429f44be0495da55894d620/filetype-1.2.0-py2.py3-none-any.whl", hash = "sha256:7ce71b6880181241cf7ac8697a2f1eb6a8bd9b429f7ad6d27b8db9ba5f1c2d25", size = 19970, upload-time = "2022-11-02T17:34:01.425Z" },
-]
-
-[[package]]
 name = "flatbuffers"
 version = "25.12.19"
 source = { registry = "https://pypi.org/simple" }
@@ -906,11 +897,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1e/68/c2ff6043d93fda69e5c12a834d0be3b3fa6c762e89732160532566be621b/google_auth-2.61.0-py3-none-any.whl", hash = "sha256:ca60266a37475ae68b63bac007272f46094b3d571abe92aded329b6cfb568025", size = 268021, upload-time = "2026-10-07T20:13:13.2Z" },
 ]
 
-[package.optional-dependencies]
-requests = [
-    { name = "requests" },
-]
-
 [[package]]
 name = "google-auth-httplib2"
 version = "0.4.4"
@@ -922,27 +908,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/bb/6d/a511ca64d5412850e351bdec6bb224e5090749bd85c186135e8fdb4fd85a/google_auth_httplib2-0.4.4.tar.gz", hash = "sha256:b931de392c20cfaa351cd789274922bd8cdc001e0e9e96de31b39d71347f8e16", size = 11221, upload-time = "2026-10-01T18:14:25.38Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/de/ea/27cf5d623efdc1cdb2632b4c872ac5092cd3895671ba1d5004e73c3f1a7c/google_auth_httplib2-0.4.4-py3-none-any.whl", hash = "sha256:bbe5d7b2401bb3a4017f4720e1e91bd273ab9a2bb60b84e65edbc0de127852da", size = 9542, upload-time = "2026-10-01T18:07:31.699Z" },
-]
-
-[[package]]
-name = "google-genai"
-version = "2.33.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "distro" },
-    { name = "google-auth", extra = ["requests"] },
-    { name = "httpx" },
-    { name = "pydantic" },
-    { name = "requests" },
-    { name = "sniffio" },
-    { name = "tenacity" },
-    { name = "typing-extensions" },
-    { name = "websockets" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/83/a4/b83b378b4a2fbbfb300c3fde0ff9f443f049c33e2accedf06bc0ad9bf393/google_genai-2.33.0.tar.gz", hash = "sha256:fced7f746da45264b34bcf6044a6fcdb91ebad1825e95c324ee48addb6e557ae", size = 758627, upload-time = "2026-10-23T00:06:28.332Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/3b/9ae8e16c5b2177bfdec1c64769a93eea9093de684e0bbb95c10c77645fef/google_genai-2.33.0-py3-none-any.whl", hash = "sha256:f3f8ab696b35caf95c222e05268740c1ccd6934257890506be73b126150d3b14", size = 1222487, upload-time = "2026-10-23T00:06:26.528Z" },
 ]
 
 [[package]]
@@ -1341,18 +1306,17 @@ wheels = [
 ]
 
 [[package]]
-name = "langchain-google-genai"
-version = "4.4.2"
+name = "langchain-nvidia-ai-endpoints"
+version = "1.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "filetype" },
-    { name = "google-genai" },
+    { name = "aiohttp" },
     { name = "langchain-core" },
-    { name = "pydantic" },
+    { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e9/c5/dce61b4fb570012c4a856d971626355bd29c9425af7195e2c242e77297f8/langchain_google_genai-4.4.2.tar.gz", hash = "sha256:0872df6de1ebf031c4dad59aead504f168ff31a4d73ea74e52bb1fcdb8f4ab91", size = 379336, upload-time = "2026-10-13T17:25:46.943Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/e8/eae73c346c4a849321ebeff68f42a5a9a6fa8f1d3cf7146975b71e4279aa/langchain_nvidia_ai_endpoints-1.5.0.tar.gz", hash = "sha256:9c76d5507fd6a4905073611b03127b3423b88d2692af8bfce04b20c4ec161ed5", size = 85162, upload-time = "2026-10-14T23:17:44.202Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/72/70/7a434c9b97ff360344c99009f960d45810c7e6bb572e5aadf114aa02eded/langchain_google_genai-4.4.2-py3-none-any.whl", hash = "sha256:db68bd24e5372b2688f6902e47521a6802bfecc36e2d5bbff14076f8cbb26c83", size = 81915, upload-time = "2026-10-13T17:25:45.539Z" },
+    { url = "https://files.pythonhosted.org/packages/98/bf/fd4da17062dd55f38a3f1f7585e72f13424368e4fe77e564b5c73be82834/langchain_nvidia_ai_endpoints-1.5.0-py3-none-any.whl", hash = "sha256:98e7e8e677a522bd9c48c7a606af2a949bf682b6cce4e62449e38bc6f485a4cd", size = 89302, upload-time = "2026-10-14T23:17:43.002Z" },
 ]
 
 [[package]]

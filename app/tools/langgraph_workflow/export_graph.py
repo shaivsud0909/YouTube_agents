@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from typing_extensions import TypedDict
@@ -41,12 +40,14 @@ def _build_visual_graph():
     builder = StateGraph(ScriptState)
     builder.add_node("analyze_topic", _stub)
     builder.add_node("generate_questions", _stub)
+    builder.add_node("auto_answer", _stub)
     builder.add_node("process_answers", _stub)
     builder.add_node("write_script", _stub)
 
     builder.add_edge(START, "analyze_topic")
     builder.add_edge("analyze_topic", "generate_questions")
-    builder.add_edge("generate_questions", "process_answers")
+    builder.add_edge("generate_questions", "auto_answer")
+    builder.add_edge("auto_answer", "process_answers")
     builder.add_conditional_edges(
         "process_answers",
         _route,
@@ -54,10 +55,7 @@ def _build_visual_graph():
     )
     builder.add_edge("write_script", END)
 
-    return builder.compile(
-        checkpointer=MemorySaver(),
-        interrupt_before=["process_answers"],
-    )
+    return builder.compile()
 
 
 if __name__ == "__main__":

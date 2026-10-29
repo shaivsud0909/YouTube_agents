@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 from typing import Any
 
 from app.tools.langgraph_workflow import get_graph
@@ -17,7 +16,7 @@ class ScriptQuestionTool:
     """
 
     def __init__(self) -> None:
-        self._thread_id: str | None = None
+        self._state: ScriptState | None = None
 
     # ------------------------------------------------------------------
     # Tool 2 of 3
@@ -26,9 +25,6 @@ class ScriptQuestionTool:
     def start(self, topic: str, existing_script: str = "") -> dict[str, Any]:
         if not topic or not topic.strip():
             raise ValueError("topic must not be empty")
-
-        self._thread_id = str(uuid.uuid4())
-        config = {"configurable": {"thread_id": self._thread_id}}
 
         initial_state: ScriptState = {
             "topic": topic.strip(),
@@ -45,9 +41,10 @@ class ScriptQuestionTool:
             "needs_more_questions": True,
         }
 
-        logger.info("ScriptQuestionTool.start: topic='%s' thread=%s", topic, self._thread_id)
-        # Runs analyze_topic → generate_questions → interrupts before process_answers
-        result = get_graph().invoke(initial_state, config)
+        logger.info("ScriptQuestionTool.start: topic='%s'", topic)
+        # Runs analyze_topic → generate_questions → END
+        result = get_graph().invoke(initial_state)
+        self._state = result
 
         return {
             "structure": result["structure"],
@@ -62,18 +59,13 @@ class ScriptQuestionTool:
     # ------------------------------------------------------------------
 
     def answer_and_finalize(self, answers: dict[str, str]) -> dict[str, Any]:
-        if self._thread_id is None:
+        if self._state is None:
             raise RuntimeError("Call start() before answer_and_finalize()")
 
-        config = {"configurable": {"thread_id": self._thread_id}}
-        graph = get_graph()
-
-        # Inject answers into the paused checkpoint state
-        graph.update_state(config, {"current_answers": answers})
-
-        logger.info("ScriptQuestionTool.answer_and_finalize: thread=%s", self._thread_id)
-        # Resume: process_answers → conditional → (generate_questions | write_script)
-        result = graph.invoke(None, config)
+        logger.info("ScriptQuestionTool.answer_and_finalize")
+        # process_answers → conditional → (generate_questions | write_script) → END
+        result = get_graph().invoke({**self._state, "current_answers": answers})
+        self._state = result
 
         if result["final_script"] is not None:
             return {

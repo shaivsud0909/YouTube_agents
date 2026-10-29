@@ -25,7 +25,8 @@ def startup_event():
     from core.logs import logger
     logger.info("Starting up the application...")
 
-
+from app.routers.script_api import script_router
 
 app.include_router(config_router, tags=["config"], prefix="/config")
+app.include_router(script_router, tags=["script"], prefix="/script")
 app.include_router(research_router, tags=["research"], prefix="/research")

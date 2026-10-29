@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from app.tools.langgraph_workflow.nodes import (
     analyze_topic,
+    auto_answer,
     generate_questions,
     process_answers,
     route_after_assessment,
@@ -20,12 +20,14 @@ def build_graph():
 
     builder.add_node("analyze_topic", analyze_topic)
     builder.add_node("generate_questions", generate_questions)
+    builder.add_node("auto_answer", auto_answer)
     builder.add_node("process_answers", process_answers)
     builder.add_node("write_script", write_script)
 
     builder.add_edge(START, "analyze_topic")
     builder.add_edge("analyze_topic", "generate_questions")
-    builder.add_edge("generate_questions", "process_answers")
+    builder.add_edge("generate_questions", "auto_answer")
+    builder.add_edge("auto_answer", "process_answers")
     builder.add_conditional_edges(
         "process_answers",
         route_after_assessment,
@@ -33,10 +35,7 @@ def build_graph():
     )
     builder.add_edge("write_script", END)
 
-    return builder.compile(
-        checkpointer=MemorySaver(),
-        interrupt_before=["process_answers"],
-    )
+    return builder.compile()
 
 
 @lru_cache(maxsize=1)

@@ -48,6 +48,15 @@ class QuestionBatch(BaseModel):
     note: str = Field(description="Brief explanation of why these questions were chosen")
 
 
+class Answer(BaseModel):
+    id: str = Field(description="Id of the question being answered, e.g. 'q1'")
+    answer: str = Field(description="Answer grounded in the retrieved context")
+
+
+class AnswerBatch(BaseModel):
+    answers: list[Answer]
+
+
 class GapAssessment(BaseModel):
     resolved_gaps: list[str] = Field(description="Gaps now filled by the user's answers")
     remaining_gaps: list[str] = Field(description="Gaps that still need information")
@@ -62,6 +71,10 @@ class ScriptSectionContent(BaseModel):
     name: str
     content: str = Field(description="Full spoken text for this section")
     word_count: int
+
+
+class SectionDraft(BaseModel):
+    content: str = Field(description="Full spoken text for this section only")
 
 
 class FinalScript(BaseModel):

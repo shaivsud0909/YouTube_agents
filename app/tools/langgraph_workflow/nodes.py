@@ -4,14 +4,19 @@ from app.llm import llm_call
 from app.tools.retriever_tool import retrieve_context
 from app.tools.script_tool import prompts
 from app.tools.script_tool.schemas import (
+    AnswerBatch,
     FinalScript,
     GapAssessment,
     QuestionBatch,
     ScriptAnalysis,
     ScriptStructure,
+    SectionDraft,
 )
 from app.tools.langgraph_workflow.state import ScriptState
 from core.logs import logger
+
+# Hard cap on question/answer rounds so the loop always terminates.
+MAX_BATCHES = 3
 
 
 def analyze_topic(state: ScriptState) -> dict:
@@ -81,6 +86,48 @@ def generate_questions(state: ScriptState) -> dict:
     }
 
 
+def _format_chunks(chunks: list[dict]) -> str:
+    if not chunks:
+        return "No relevant context found in the research database."
+    return "\n\n".join(
+        f"[{i+1}] {c.get('text') or c.get('content') or str(c)}"
+        for i, c in enumerate(chunks)
+    )
+
+
+def auto_answer(state: ScriptState) -> dict:
+    """Answer the pending questions from the research database."""
+    pending = state["pending_questions"]
+
+    logger.info("Node auto_answer: retrieving context for %d questions", len(pending))
+    seen: set[str] = set()
+    chunks: list[dict] = []
+    for q in pending:
+        results = retrieve_context(topic=f"{state['topic']} {q['text']}", top_k=3).get("results", [])
+        for c in results:
+            key = c.get("text") or c.get("content") or str(c)
+            if key not in seen:
+                seen.add(key)
+                chunks.append(c)
+
+    r = llm_call(
+        AnswerBatch,
+        prompts.ANSWER_PROMPT,
+        {
+            "topic": state["topic"],
+            "questions": "\n".join(f"{q['id']}: {q['text']}" for q in pending),
+            "retrieved_context": _format_chunks(chunks),
+        },
+    )
+    batch: AnswerBatch = r["response"]
+
+    valid_ids = {q["id"] for q in pending}
+    return {
+        "current_answers": {a.id: a.answer for a in batch.answers if a.id in valid_ids},
+        "total_tokens": state["total_tokens"] + r["token_used"],
+    }
+
+
 def process_answers(state: ScriptState) -> dict:
     """Ingest user answers, retrieve grounding context, reassess gaps."""
     answers = state["current_answers"]
@@ -106,14 +153,7 @@ def process_answers(state: ScriptState) -> dict:
 
     logger.info("Node process_answers: retrieving context for reassessment")
     retrieval = retrieve_context(topic=retrieval_query, top_k=5)
-    chunks = retrieval.get("results", [])
-    if chunks:
-        retrieved_context = "\n\n".join(
-            f"[{i+1}] {c.get('text') or c.get('content') or str(c)}"
-            for i, c in enumerate(chunks)
-        )
-    else:
-        retrieved_context = "No relevant context found in the research database."
+    retrieved_context = _format_chunks(retrieval.get("results", []))
 
     logger.info("Node process_answers: reassessing after %d answers", len(answers))
     r = llm_call(
@@ -149,25 +189,48 @@ def write_script(state: ScriptState) -> dict:
         else "None."
     )
 
-    logger.info("Node write_script: generating final script for '%s'", topic)
-    r = llm_call(
-        FinalScript,
-        prompts.FINAL_SCRIPT_PROMPT,
-        {
-            "topic": topic,
-            "structure_json": structure.model_dump_json(indent=2),
-            "existing_script": state["existing_script"] or "(none)",
-            "all_qa": all_qa,
-        },
+    sections: list[dict] = []
+    tokens = 0
+    for i, section in enumerate(structure.sections, start=1):
+        logger.info(
+            "Node write_script: section %d/%d '%s'", i, len(structure.sections), section.name
+        )
+        r = llm_call(
+            SectionDraft,
+            prompts.SECTION_SCRIPT_PROMPT,
+            {
+                "topic": topic,
+                "section_json": section.model_dump_json(indent=2),
+                "section_index": i,
+                "section_count": len(structure.sections),
+                "previous_text": sections[-1]["content"] if sections else "",
+                "existing_script": state["existing_script"] or "(none)",
+                "all_qa": all_qa,
+            },
+        )
+        content = r["response"].content.strip()
+        tokens += r["token_used"]
+        sections.append(
+            {"name": section.name, "content": content, "word_count": len(content.split())}
+        )
+
+    total_words = sum(s["word_count"] for s in sections)
+    final = FinalScript(
+        title=structure.topic,
+        sections=sections,
+        total_word_count=total_words,
+        estimated_duration_minutes=round(total_words / 150, 1),
+        production_notes="",
     )
-    final: FinalScript = r["response"]
 
     return {
         "final_script": final.model_dump(),
-        "total_tokens": state["total_tokens"] + r["token_used"],
+        "total_tokens": state["total_tokens"] + tokens,
     }
 
 
 def route_after_assessment(state: ScriptState) -> str:
     """Conditional edge: loop back for more questions or proceed to write."""
-    return "generate_questions" if state["needs_more_questions"] else "write_script"
+    if state["needs_more_questions"] and state["batch_counter"] < MAX_BATCHES:
+        return "generate_questions"
+    return "write_script"
