@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     youtube_api_key: str
 
     # NVIDIA
-    model_name: str = "nvidia/nemotron-3.5-lightning-30b-a3b"
+    model_name: str = "openai/gpt-oss-20b"
     nvidia_api_key: str
 
 

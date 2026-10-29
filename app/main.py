@@ -2,6 +2,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
 
+from app.routers.agent_api import agent_router
 from app.routers.config_api import config_router
 from app.routers.research_api import research_router
 
@@ -25,8 +26,7 @@ def startup_event():
     from core.logs import logger
     logger.info("Starting up the application...")
 
-from app.routers.script_api import script_router
 
 app.include_router(config_router, tags=["config"], prefix="/config")
-app.include_router(script_router, tags=["script"], prefix="/script")
 app.include_router(research_router, tags=["research"], prefix="/research")
+app.include_router(agent_router, tags=["agent"], prefix="/agent")

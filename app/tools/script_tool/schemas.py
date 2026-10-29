@@ -85,3 +85,17 @@ class FinalScript(BaseModel):
     production_notes: str = Field(
         description="Optional delivery or editing notes for the creator"
     )
+
+
+class GroundedAnswer(BaseModel):
+    answer: str = Field(description="Answer grounded only in the retrieved context")
+    answered: bool = Field(description="False when the context was not enough to answer")
+
+
+class QAValidation(BaseModel):
+    question_ok: bool = Field(description="Question is relevant to the topic, specific and clear")
+    answer_addresses_question: bool
+    grounded_in_context: bool = Field(description="Every claim in the answer is supported by the context")
+    unsupported_claims: list[str] = Field(default_factory=list)
+    issues: list[str] = Field(default_factory=list, description="Everything wrong with the pair")
+    is_valid: bool = Field(description="True only if all checks pass")
